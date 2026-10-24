@@ -1,10 +1,13 @@
 <?php
 declare(strict_types= 1);
-function scheduleGen(): void {
-    $month = date('m');
-    $year = date('Y');
+function scheduleGen(?int $year = null, ?int $month = null, int $monthCount = 1, ?int $currentDay = null): void {
+    $year ??= (int) date('Y');
+    $month ??= (int) date('m');
+    $currentDay ??= 1;
+    $currentDayFormatted = strlen((string) $currentDay) === 1 ? '0' . $currentDay : $currentDay; 
+    $currentDayObject = DateTime::createFromFormat('d-m-Y', $currentDayFormatted . '-' . $month . '-' . $year); 
     $firstDay = DateTime::createFromFormat('d-m-Y', '01-' . $month . '-' . $year);
-    echo($firstDay->format('F') . PHP_EOL);
+    echo $firstDay->format('F') . PHP_EOL;
     $daysInMonth = (int)$firstDay->format('t');
     $currentWeekday = (int)$firstDay->format('N');
     $position = 0;
@@ -12,8 +15,8 @@ function scheduleGen(): void {
         echo '   ';
         $position++;
     }
+    $currentWeekday = (int)$currentDayObject->format('N');
     $workDays = [];
-    $currentDay = 1;
     while ($currentDay <= $daysInMonth) {
         if ($currentWeekday === 6) {
             $currentDay += 2;
@@ -41,6 +44,17 @@ function scheduleGen(): void {
             echo PHP_EOL;
         }
     }
+    echo PHP_EOL;
+    if ($monthCount > 1) {
+        if ($month === 12) {
+            $month = 1;
+            $year++;
+        } else {
+            $month++;
+        }
+        $currentDay = end($workDays) + 3 - $daysInMonth;
+        scheduleGen($year, $month, $monthCount - 1, $currentDay);
+    }
 }
 
-scheduleGen();
+scheduleGen(2026, 10, 5);
